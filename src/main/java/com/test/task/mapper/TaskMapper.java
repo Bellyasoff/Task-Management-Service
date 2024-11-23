@@ -25,6 +25,7 @@ public class TaskMapper {
                 .status(task.getStatus())
                 .priority(task.getPriority())
                 .comment(task.getComment())
+                .author_id(task.getAuthor().getId())
                 .build();
         return taskDto;
     }

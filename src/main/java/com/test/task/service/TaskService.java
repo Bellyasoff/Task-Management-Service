@@ -1,7 +1,7 @@
 package com.test.task.service;
 
 import com.test.task.dto.TaskDto;
-import com.test.task.model.Task;
+import com.test.task.dto.UserDto;
 
 import java.util.List;
 
@@ -9,7 +9,7 @@ public interface TaskService {
 
     List<TaskDto> findAllTasks();
 
-    TaskDto createTask(TaskDto taskDto);
+    TaskDto createTask(TaskDto taskDto, UserDto author);
 
     TaskDto findTaskById(Long taskId) throws Exception;
 
@@ -17,5 +17,5 @@ public interface TaskService {
 
     void delete(Long taskId) throws Exception;
 
-    List<TaskDto> findTaskByUser();
+//    List<TaskDto> findTaskByUser();
 }

@@ -1,18 +1,21 @@
 package com.test.task.service.taskServiceImpl;
 
-//import com.test.task.dto.LoginRequest;
+import com.test.task.dto.LoginRequest;
 import com.test.task.dto.UserDto;
 import com.test.task.model.Role;
 import com.test.task.model.UserEntity;
 import com.test.task.repository.RoleRepository;
 import com.test.task.repository.UserRepository;
-//import com.test.task.security.JWT.JwtTokenProvider;
+import com.test.task.security.CustomUserDetailService;
+import com.test.task.security.JWT.JwtTokenProvider;
 import com.test.task.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.Optional;
 
 import static com.test.task.mapper.UserMapper.mapToUser;
 import static com.test.task.mapper.UserMapper.mapToUserDto;
@@ -22,19 +25,22 @@ public class UserServiceImplementation implements UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-//    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenProvider jwtTokenProvider;
 
-//    private final PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
+    private final CustomUserDetailService userDetailService;
 
     @Autowired
     public UserServiceImplementation (UserRepository userRepository,
-                                      RoleRepository roleRepository/*,
+                                      RoleRepository roleRepository,
                                       JwtTokenProvider jwtTokenProvider,
-                                      PasswordEncoder passwordEncoder*/) {
+                                      PasswordEncoder passwordEncoder,
+                                      CustomUserDetailService userDetailService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
-//        this.jwtTokenProvider = jwtTokenProvider;
- //       this.passwordEncoder = passwordEncoder;
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.passwordEncoder = passwordEncoder;
+        this.userDetailService = userDetailService;
     }
 
     @Override
@@ -47,7 +53,7 @@ public class UserServiceImplementation implements UserService {
         }
 
         UserEntity user = mapToUser(userDto);
-//        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
 
         Role role = roleRepository.findByName("USER");
         user.setRoles(Collections.singletonList(role));
@@ -72,19 +78,29 @@ public class UserServiceImplementation implements UserService {
         return mapToUserDto(user);
     }
 
-//    @Override
-//    public String authenticate(LoginRequest loginRequest) {
-//        UserEntity user = userRepository.findByEmail(loginRequest.getEmail());
-//
-//        if (user == null || !passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-//            throw new IllegalArgumentException("Invalid email or password");
-//        }
-//
-//        return jwtTokenProvider.createToken(loginRequest.getEmail());
-//    }
-//
-//    @Override
-//    public boolean passwordMatches(String rawPassword, String encodedPassword) {
-//        return passwordEncoder.matches(rawPassword, encodedPassword);
-//    }
+    @Override
+    public UserDto findById(long userId) throws Exception {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new Exception("User not found with id: " + userId));
+        return mapToUserDto(user);
+    }
+
+    @Override
+    public String authenticate(LoginRequest loginRequest) {
+        UserDetails user = userDetailService.loadUserByUsername(loginRequest.getEmail());
+        if (user == null) {
+            throw new RuntimeException("Invalid username or password");
+        }
+
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Invalid username or password");
+        }
+
+        return jwtTokenProvider.createToken(user.getUsername());
+    }
+
+    @Override
+    public boolean passwordMatches(String rawPassword, String encodedPassword) {
+        return passwordEncoder.matches(rawPassword, encodedPassword);
+    }
 }

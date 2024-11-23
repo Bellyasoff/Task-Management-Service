@@ -1,8 +1,9 @@
 package com.test.task.service;
 
-//import com.test.task.dto.LoginRequest;
+import com.test.task.dto.LoginRequest;
 import com.test.task.dto.UserDto;
-import com.test.task.model.UserEntity;
+
+import java.util.Optional;
 
 public interface UserService {
     void saveUser(UserDto userDto);
@@ -11,7 +12,9 @@ public interface UserService {
 
     UserDto findByEmail(String email);
 
-//    String authenticate(LoginRequest loginRequest);
+    UserDto findById(long id) throws Exception;
 
-//    boolean passwordMatches(String rawPassword, String encodedPassword);
+    String authenticate(LoginRequest loginRequest);
+
+    boolean passwordMatches(String rawPassword, String encodedPassword);
 }
