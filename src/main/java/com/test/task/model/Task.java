@@ -22,10 +22,10 @@ public class Task {
     private String comment;
 
     @ManyToOne
-    @JoinColumn(name = "author_id")
+    @JoinColumn(name = "author")
     private UserEntity author;
 
     @ManyToOne
-    @JoinColumn(name = "executor_id")
+    @JoinColumn(name = "executor")
     private UserEntity executor;
 }

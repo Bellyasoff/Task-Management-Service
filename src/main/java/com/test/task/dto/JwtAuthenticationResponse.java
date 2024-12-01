@@ -1,16 +1,11 @@
 package com.test.task.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
-@Builder
-@NoArgsConstructor
 @AllArgsConstructor
 public class JwtAuthenticationResponse {
 
     private String accessToken;
-//    private String refreshToken;
+    private String refreshToken;
 }

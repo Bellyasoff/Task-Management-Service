@@ -9,7 +9,7 @@ public interface TaskService {
 
     List<TaskDto> findAllTasks();
 
-    TaskDto createTask(TaskDto taskDto, UserDto author);
+    TaskDto createTask(TaskDto taskDto, String author);
 
     TaskDto findTaskById(Long taskId) throws Exception;
 
@@ -17,5 +17,5 @@ public interface TaskService {
 
     void delete(Long taskId) throws Exception;
 
-//    List<TaskDto> findTaskByUser();
+    TaskDto assignExecutor(Long id, String executor);
 }

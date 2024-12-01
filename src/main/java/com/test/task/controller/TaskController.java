@@ -2,6 +2,7 @@ package com.test.task.controller;
 
 import com.test.task.dto.TaskDto;
 import com.test.task.dto.UserDto;
+import com.test.task.model.enums.Status;
 import com.test.task.security.CustomUserDetails;
 import com.test.task.service.TaskService;
 import com.test.task.service.UserService;
@@ -9,8 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -47,16 +46,11 @@ public class TaskController {
 
     // Создать новую задачу
     @PostMapping
-    public ResponseEntity<TaskDto> createTask(@RequestBody TaskDto taskDto) throws Exception {
-        CustomUserDetails userDetails =
-                (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public ResponseEntity<TaskDto> createTask(@RequestBody TaskDto taskDto,
+                                              @AuthenticationPrincipal CustomUserDetails currentUser) throws Exception {
+        TaskDto createdTask = taskService.createTask(taskDto, currentUser.getUsername());
 
-        UserDto author = userService.findById(userDetails.getId());
-        taskDto.setAuthor_id(author.getId());
-
-        return ResponseEntity
-                .status(201)
-                .body(taskService.createTask(taskDto, author));
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdTask);
     }
 
     // Обновить задачу
@@ -84,25 +78,11 @@ public class TaskController {
 
     // Назначить исполнителя задачи
     @PatchMapping("/{id}/assign")
-    public ResponseEntity<TaskDto> assignExecutor(@PathVariable long id) {
-        CustomUserDetails userDetails =
-                (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public ResponseEntity<TaskDto> assignExecutor(@PathVariable long id,
+                                                  @AuthenticationPrincipal CustomUserDetails currentUser) throws Exception {
+        TaskDto updatedTask = taskService.assignExecutor(id, currentUser.getUsername());
 
-        try {
-            TaskDto taskDto = taskService.findTaskById(id);
-            UserDto executor = userService.findByUsername(userDetails.getUsername());
-
-            // Проверяем, что задача еще не имеет исполнителя (если это необходимо)
-            if (taskDto.getExecutor() != null) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-            }
-
-            taskDto.setExecutor(executor);
-
-            return ResponseEntity.ok(taskService.updateTask(id, taskDto));
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
+            return ResponseEntity.ok(updatedTask);
     }
 
 }

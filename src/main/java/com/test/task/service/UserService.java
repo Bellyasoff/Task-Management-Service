@@ -1,5 +1,6 @@
 package com.test.task.service;
 
+import com.test.task.dto.JwtAuthenticationResponse;
 import com.test.task.dto.LoginRequest;
 import com.test.task.dto.UserDto;
 
@@ -13,8 +14,6 @@ public interface UserService {
     UserDto findByEmail(String email);
 
     UserDto findById(long id) throws Exception;
-
-    String authenticate(LoginRequest loginRequest);
 
     boolean passwordMatches(String rawPassword, String encodedPassword);
 }

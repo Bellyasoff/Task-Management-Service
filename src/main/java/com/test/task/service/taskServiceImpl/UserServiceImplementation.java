@@ -1,5 +1,6 @@
 package com.test.task.service.taskServiceImpl;
 
+import com.test.task.dto.JwtAuthenticationResponse;
 import com.test.task.dto.LoginRequest;
 import com.test.task.dto.UserDto;
 import com.test.task.model.Role;
@@ -15,7 +16,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
-import java.util.Optional;
 
 import static com.test.task.mapper.UserMapper.mapToUser;
 import static com.test.task.mapper.UserMapper.mapToUserDto;
@@ -83,20 +83,6 @@ public class UserServiceImplementation implements UserService {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new Exception("User not found with id: " + userId));
         return mapToUserDto(user);
-    }
-
-    @Override
-    public String authenticate(LoginRequest loginRequest) {
-        UserDetails user = userDetailService.loadUserByUsername(loginRequest.getEmail());
-        if (user == null) {
-            throw new RuntimeException("Invalid username or password");
-        }
-
-        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid username or password");
-        }
-
-        return jwtTokenProvider.createToken(user.getUsername());
     }
 
     @Override

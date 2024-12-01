@@ -1,9 +1,6 @@
 package com.test.task.security.JWT;
 
-import com.test.task.dto.JwtAuthenticationResponse;
-import com.test.task.model.UserEntity;
 import com.test.task.security.CustomUserDetailService;
-import com.test.task.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,9 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -40,7 +34,13 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String token = resolveToken(request);
 
-        if (token != null && jwtTokenProvider.validateToken(token)) {
+        String requestPath = request.getRequestURI();
+        if (requestPath.contains("/api/auth/login")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        if (token != null && jwtTokenProvider.validateAccessToken(token)) {
             String email = jwtTokenProvider.getEmailFromToken(token);
 
             // Загрузка пользователя по email
@@ -65,3 +65,6 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 }
 
+/*
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwiaWF0IjoxNzMyMTU1MjAxLCJleHAiOjE3MzIxNTg4MDF9.TSEyHQS7P9DQE80pykIqLeVGBz54aZgAgbbRl1SR0Dw
+ */

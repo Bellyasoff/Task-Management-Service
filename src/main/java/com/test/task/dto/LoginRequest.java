@@ -1,6 +1,5 @@
 package com.test.task.dto;
 
-import lombok.Builder;
 import lombok.Data;
 
 @Data

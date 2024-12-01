@@ -5,8 +5,11 @@ import com.test.task.dto.UserDto;
 import com.test.task.mapper.TaskMapper;
 import com.test.task.model.Task;
 import com.test.task.model.UserEntity;
+import com.test.task.model.enums.Status;
 import com.test.task.repository.TaskRepository;
+import com.test.task.repository.UserRepository;
 import com.test.task.service.TaskService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,17 +19,17 @@ import java.util.stream.Collectors;
 import static com.test.task.mapper.TaskMapper.mapToTask;
 import static com.test.task.mapper.TaskMapper.mapToTaskDto;
 
-import static com.test.task.mapper.UserMapper.mapToUser;
-import static com.test.task.mapper.UserMapper.mapToUserDto;
-
 @Service
 public class TaskServiceImplementation implements TaskService {
 
-    private TaskRepository taskRepository;
+    private final TaskRepository taskRepository;
+    private final UserRepository userRepository;
 
     @Autowired
-    public TaskServiceImplementation (TaskRepository taskRepository) {
+    public TaskServiceImplementation (TaskRepository taskRepository,
+                                      UserRepository userRepository) {
         this.taskRepository = taskRepository;
+        this.userRepository = userRepository;
     }
 
 
@@ -36,10 +39,12 @@ public class TaskServiceImplementation implements TaskService {
         return tasks.stream().map(TaskMapper::mapToTaskDto).collect(Collectors.toList());
     }
 
+
     @Override
-    public TaskDto createTask(TaskDto taskDto, UserDto author) {
-        Task task = mapToTask(taskDto);
-        task.setAuthor(mapToUser(author));
+    public TaskDto createTask(TaskDto taskDto, String authorUsername) {
+        UserEntity author = userRepository.findByUsername(authorUsername);
+
+        Task task = mapToTask(taskDto, author, null);
         return mapToTaskDto(taskRepository.save(task));
     }
 
@@ -54,10 +59,6 @@ public class TaskServiceImplementation implements TaskService {
     public TaskDto updateTask(long id, TaskDto taskDto) throws Exception {
         Task existingTask = taskRepository.findById(id)
                 .orElseThrow(() -> new Exception("Task not found with id: " + id));
-        if (taskDto.getExecutor() != null) {
-            UserEntity executor = mapToUser(taskDto.getExecutor());
-            existingTask.setExecutor(executor);
-        }
         if (taskDto.getHeader() != null) {
             existingTask.setHeader(taskDto.getHeader());
         }
@@ -81,8 +82,19 @@ public class TaskServiceImplementation implements TaskService {
         taskRepository.deleteById(taskId);
     }
 
-//    @Override
-//    public List<TaskDto> findTaskByUser() {
-//        return null;
-//    }
+    @Override
+    public TaskDto assignExecutor(Long id, String executorUsername) {
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Task not found: " + id));
+
+        if (task.getExecutor() != null) {
+            throw new IllegalStateException("Task already has executor");
+        }
+
+        UserEntity executor = userRepository.findByUsername(executorUsername);
+
+        task.setExecutor(executor);
+        task.setStatus(Status.IN_PROCESS);
+        return mapToTaskDto(taskRepository.save(task));
+    }
 }
