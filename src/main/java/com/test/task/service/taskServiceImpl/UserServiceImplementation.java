@@ -1,7 +1,5 @@
 package com.test.task.service.taskServiceImpl;
 
-import com.test.task.dto.JwtAuthenticationResponse;
-import com.test.task.dto.LoginRequest;
 import com.test.task.dto.UserDto;
 import com.test.task.model.Role;
 import com.test.task.model.UserEntity;
@@ -11,7 +9,6 @@ import com.test.task.security.CustomUserDetailService;
 import com.test.task.security.JWT.JwtTokenProvider;
 import com.test.task.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -45,10 +42,10 @@ public class UserServiceImplementation implements UserService {
 
     @Override
     public void saveUser(UserDto userDto) {
-        if (userRepository.findByEmail(userDto.getEmail()) != null) {
+        if (userRepository.findByEmail(userDto.getEmail()).isPresent()) {
             throw new IllegalArgumentException("User with email already exists: " + userDto.getEmail());
         }
-        if (userRepository.findByUsername(userDto.getUsername()) != null) {
+        if (userRepository.findByUsername(userDto.getUsername()).isPresent()) {
             throw new IllegalArgumentException("User with username already exists: " + userDto.getUsername());
         }
 
@@ -62,7 +59,8 @@ public class UserServiceImplementation implements UserService {
 
     @Override
     public UserDto findByUsername(String username) {
-        UserEntity user = userRepository.findByUsername(username);
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow();
         if (user == null) {
             throw new IllegalArgumentException("User with username not found: " + username);
         }
@@ -71,7 +69,8 @@ public class UserServiceImplementation implements UserService {
 
     @Override
     public UserDto findByEmail(String email) {
-        UserEntity user = userRepository.findByEmail(email);
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow();
         if (user == null) {
             throw new IllegalArgumentException("User with email not found: " + email);
         }

@@ -1,4 +1,4 @@
-package com.test.task.dto;
+package com.test.task.dto.authDto;
 
 import lombok.Data;
 

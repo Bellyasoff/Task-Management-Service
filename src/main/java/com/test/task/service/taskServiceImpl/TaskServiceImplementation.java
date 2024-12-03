@@ -1,7 +1,6 @@
 package com.test.task.service.taskServiceImpl;
 
-import com.test.task.dto.TaskDto;
-import com.test.task.dto.UserDto;
+import com.test.task.dto.taskDto.TaskDto;
 import com.test.task.mapper.TaskMapper;
 import com.test.task.model.Task;
 import com.test.task.model.UserEntity;
@@ -11,6 +10,7 @@ import com.test.task.repository.UserRepository;
 import com.test.task.service.TaskService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,26 +32,35 @@ public class TaskServiceImplementation implements TaskService {
         this.userRepository = userRepository;
     }
 
-
+    // Получение задач: USER видит свои задачи, ADMIN — все
     @Override
-    public List<TaskDto> findAllTasks() {
-        List<Task> tasks = taskRepository.findAll();
+    public List<TaskDto> getTasksForUser(String username, boolean isAdmin) {
+        List<Task> tasks = isAdmin ?
+                taskRepository.findAll()
+                : taskRepository.findByExecutorUsername(username);
+
         return tasks.stream().map(TaskMapper::mapToTaskDto).collect(Collectors.toList());
     }
 
 
     @Override
     public TaskDto createTask(TaskDto taskDto, String authorUsername) {
-        UserEntity author = userRepository.findByUsername(authorUsername);
+        UserEntity author = userRepository.findByUsername(authorUsername)
+                .orElseThrow();
 
         Task task = mapToTask(taskDto, author, null);
         return mapToTaskDto(taskRepository.save(task));
     }
 
     @Override
-    public TaskDto findTaskById(Long taskId) throws Exception {
+    public TaskDto findTaskById(Long taskId, String username, boolean isAdmin) throws Exception {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new Exception("Task not found with id: " + taskId));
+        if (!isAdmin) {
+            if (!task.getExecutor().getUsername().equals(username)) {
+                throw new Exception("You are not an executor of the task");
+            }
+        }
         return mapToTaskDto(task);
     }
 
@@ -59,18 +68,45 @@ public class TaskServiceImplementation implements TaskService {
     public TaskDto updateTask(long id, TaskDto taskDto) throws Exception {
         Task existingTask = taskRepository.findById(id)
                 .orElseThrow(() -> new Exception("Task not found with id: " + id));
-        if (taskDto.getHeader() != null) {
+
+        if (existingTask.getStatus() == Status.COMPLETED) {
+            throw new Exception("Cannot update completed task");
+        }
+
             existingTask.setHeader(taskDto.getHeader());
-        }
-        if (taskDto.getDescription() != null) {
             existingTask.setDescription(taskDto.getDescription());
-        }
-        if (taskDto.getStatus() != null) {
             existingTask.setStatus(taskDto.getStatus());
-        }
-        if (taskDto.getPriority() != null) {
             existingTask.setPriority(taskDto.getPriority());
+            existingTask.setComment(taskDto.getComment());
+
+        return mapToTaskDto(taskRepository.save(existingTask));
+    }
+
+    @Override
+    public TaskDto updateTaskComment(long id, String comment, String username) throws Exception {
+        Task existingTask = taskRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Task not found with id: " + id));
+
+        if (!existingTask.getExecutor().getUsername().equals(username)) {
+            throw new Exception("You are not able to comment this task");
         }
+
+        existingTask.setComment(comment);
+
+        return mapToTaskDto(taskRepository.save(existingTask));
+    }
+
+    @Override
+    public TaskDto updateTaskStatus(long id, Status newStatus, String username) throws Exception {
+        Task existingTask = taskRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Task not found with id: " + id));
+
+        if (!existingTask.getExecutor().getUsername().equals(username)) {
+            throw new Exception("You are not able to change the status of this task");
+        }
+
+        existingTask.setStatus(newStatus);
+
         return mapToTaskDto(taskRepository.save(existingTask));
     }
 
@@ -83,18 +119,24 @@ public class TaskServiceImplementation implements TaskService {
     }
 
     @Override
-    public TaskDto assignExecutor(Long id, String executorUsername) {
+    public TaskDto assignExecutor(Long id, String executorUsername) throws Exception {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Task not found: " + id));
+
+        if (task.getStatus() == Status.COMPLETED) {
+            throw new Exception("Cannot assign executor to a completed task");
+        }
+
+        UserEntity executor = userRepository.findByUsername(executorUsername)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + executorUsername));
 
         if (task.getExecutor() != null) {
             throw new IllegalStateException("Task already has executor");
         }
 
-        UserEntity executor = userRepository.findByUsername(executorUsername);
-
         task.setExecutor(executor);
         task.setStatus(Status.IN_PROCESS);
+
         return mapToTaskDto(taskRepository.save(task));
     }
 }

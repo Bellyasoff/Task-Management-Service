@@ -1,7 +1,7 @@
 package com.test.task.service.taskServiceImpl;
 
-import com.test.task.dto.JwtAuthenticationResponse;
-import com.test.task.dto.LoginRequest;
+import com.test.task.dto.authDto.JwtAuthenticationResponse;
+import com.test.task.dto.authDto.LoginRequest;
 import com.test.task.model.RefreshStorage;
 import com.test.task.repository.RefreshStorageRepository;
 import com.test.task.security.CustomUserDetailService;
@@ -9,15 +9,9 @@ import com.test.task.security.JWT.JwtTokenProvider;
 import com.test.task.service.AuthService;
 import com.test.task.service.UserService;
 import jakarta.security.auth.message.AuthException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Optional;
 

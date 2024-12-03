@@ -1,6 +1,6 @@
 package com.test.task.mapper;
 
-import com.test.task.dto.TaskDto;
+import com.test.task.dto.taskDto.TaskDto;
 import com.test.task.model.Task;
 import com.test.task.model.UserEntity;
 import com.test.task.model.enums.Status;

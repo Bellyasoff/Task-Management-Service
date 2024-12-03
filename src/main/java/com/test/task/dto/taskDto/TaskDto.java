@@ -1,4 +1,4 @@
-package com.test.task.dto;
+package com.test.task.dto.taskDto;
 
 import com.test.task.model.enums.Priority;
 import com.test.task.model.enums.Status;

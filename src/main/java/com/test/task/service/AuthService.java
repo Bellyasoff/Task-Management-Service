@@ -1,7 +1,7 @@
 package com.test.task.service;
 
-import com.test.task.dto.JwtAuthenticationResponse;
-import com.test.task.dto.LoginRequest;
+import com.test.task.dto.authDto.JwtAuthenticationResponse;
+import com.test.task.dto.authDto.LoginRequest;
 
 public interface AuthService {
 

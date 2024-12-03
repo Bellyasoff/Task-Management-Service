@@ -1,8 +1,8 @@
 package com.test.task.controller;
 
-import com.test.task.dto.JwtAuthenticationResponse;
-import com.test.task.dto.LoginRequest;
-import com.test.task.dto.RefreshJwtRequest;
+import com.test.task.dto.authDto.JwtAuthenticationResponse;
+import com.test.task.dto.authDto.LoginRequest;
+import com.test.task.dto.authDto.RefreshJwtRequest;
 import com.test.task.dto.UserDto;
 import com.test.task.security.JWT.JwtTokenProvider;
 import com.test.task.service.AuthService;
@@ -46,11 +46,13 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    // Получить новый access токен
     @PostMapping("/refresh")
     public ResponseEntity<JwtAuthenticationResponse> refreshAccessToken(@RequestBody RefreshJwtRequest refreshToken) {
         return ResponseEntity.ok(authService.refresh(refreshToken.getRefreshToken()));
     }
 
+    // Получить новый refresh и access токены
     @PostMapping("/token")
     public ResponseEntity<JwtAuthenticationResponse> getNewAccessToken(@RequestBody RefreshJwtRequest refreshToken) {
         return ResponseEntity.ok(authService.getNewAccessToken(refreshToken.getRefreshToken()));
