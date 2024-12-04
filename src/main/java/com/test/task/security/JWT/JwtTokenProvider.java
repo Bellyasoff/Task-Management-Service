@@ -7,12 +7,14 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.test.task.model.UserEntity;
 import lombok.Getter;
+import lombok.extern.log4j.Log4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
 
 @Component
+@Log4j
 public class JwtTokenProvider {
 
     @Value("${jwt.secret.access}")
@@ -54,7 +56,7 @@ public class JwtTokenProvider {
             verifier.verify(token);
             return true;
         } catch (JWTVerificationException e) {
-            System.out.println("Access Token verification failed: " + e.getMessage());
+            log.error("Access Token verification failed: " + e.getMessage());
             return false;
         }
     }
@@ -65,7 +67,7 @@ public class JwtTokenProvider {
             verifier.verify(token);
             return true;
         } catch (JWTVerificationException e) {
-            System.out.println("Refresh token verification failed: " + e.getMessage());
+            log.error("Refresh Token verification failed: " + e.getMessage());
             return false;
         }
     }

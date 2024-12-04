@@ -8,6 +8,8 @@ import java.util.List;
 public interface TaskService {
 
     List<TaskDto> getTasksForUser(String username, boolean isAdmin);
+    List<TaskDto> getTasksByAuthor(String username);
+    List<TaskDto> getTasksByExecutor(String username);
 
     TaskDto createTask(TaskDto taskDto, String author);
 

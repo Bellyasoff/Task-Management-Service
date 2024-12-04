@@ -8,6 +8,7 @@ import com.test.task.repository.UserRepository;
 import com.test.task.security.CustomUserDetailService;
 import com.test.task.security.JWT.JwtTokenProvider;
 import com.test.task.service.UserService;
+import lombok.extern.log4j.Log4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import static com.test.task.mapper.UserMapper.mapToUser;
 import static com.test.task.mapper.UserMapper.mapToUserDto;
 
 @Service
+@Log4j
 public class UserServiceImplementation implements UserService {
 
     private final UserRepository userRepository;
@@ -42,10 +44,14 @@ public class UserServiceImplementation implements UserService {
 
     @Override
     public void saveUser(UserDto userDto) {
+        log.info("Saving user:\nUsername - " + userDto.getUsername()  +
+                ",\nEmail - " + userDto.getEmail());
         if (userRepository.findByEmail(userDto.getEmail()).isPresent()) {
+            log.error("User with email already exists: " + userDto.getEmail());
             throw new IllegalArgumentException("User with email already exists: " + userDto.getEmail());
         }
         if (userRepository.findByUsername(userDto.getUsername()).isPresent()) {
+            log.error("User with username already exists: " + userDto.getUsername());
             throw new IllegalArgumentException("User with username already exists: " + userDto.getUsername());
         }
 
@@ -54,33 +60,41 @@ public class UserServiceImplementation implements UserService {
 
         Role role = roleRepository.findByName("USER");
         user.setRoles(Collections.singletonList(role));
+        log.info("Setting role: " + user.getRoles());
+
         userRepository.save(user);
     }
 
     @Override
     public UserDto findByUsername(String username) {
+        log.info("Trying to find user with username: " + username);
         UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow();
-        if (user == null) {
-            throw new IllegalArgumentException("User with username not found: " + username);
-        }
+                .orElseThrow(() -> {
+                    log.error("User with username not found: " + username);
+                    throw new IllegalArgumentException("User with username not found: " + username);
+                });
         return mapToUserDto(user);
     }
 
     @Override
     public UserDto findByEmail(String email) {
+        log.info("Trying to find user with email: " + email);
         UserEntity user = userRepository.findByEmail(email)
-                .orElseThrow();
-        if (user == null) {
-            throw new IllegalArgumentException("User with email not found: " + email);
-        }
+                .orElseThrow(() -> {
+                    log.error("User with email not found: " + email);
+                    throw new IllegalArgumentException("User with email not found: " + email);
+                });
         return mapToUserDto(user);
     }
 
     @Override
     public UserDto findById(long userId) throws Exception {
+        log.info("Trying to find user by id: " + userId);
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new Exception("User not found with id: " + userId));
+                .orElseThrow(() -> {
+                    log.error("User with userId not found: " + userId);
+                    throw new IllegalArgumentException("User with userId not found: " + userId);
+                });
         return mapToUserDto(user);
     }
 
