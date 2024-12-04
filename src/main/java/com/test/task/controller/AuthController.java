@@ -4,7 +4,6 @@ import com.test.task.dto.authDto.JwtAuthenticationResponse;
 import com.test.task.dto.authDto.LoginRequest;
 import com.test.task.dto.authDto.RefreshJwtRequest;
 import com.test.task.dto.UserDto;
-import com.test.task.dto.taskDto.TaskDto;
 import com.test.task.security.JWT.JwtTokenProvider;
 import com.test.task.service.AuthService;
 import com.test.task.service.UserService;

@@ -8,5 +8,5 @@ import java.util.Optional;
 public interface RefreshStorageRepository extends JpaRepository<RefreshStorage, Long> {
 
     Optional<RefreshStorage> findByToken(String token);
-    String findByEmail(String email);
+    RefreshStorage findByEmail(String email);
 }

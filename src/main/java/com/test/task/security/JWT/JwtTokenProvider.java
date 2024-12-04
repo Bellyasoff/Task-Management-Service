@@ -77,4 +77,10 @@ public class JwtTokenProvider {
         DecodedJWT decodedJWT = JWT.decode(token);
         return decodedJWT.getSubject();
     }
+
+    // Проверека на истечение срока годности токена
+    public boolean isTokenExpired(String token) {
+        Date expiration = JWT.decode(token).getExpiresAt();
+        return expiration != null && expiration.before(new Date());
+    }
 }

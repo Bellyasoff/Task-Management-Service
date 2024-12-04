@@ -97,7 +97,16 @@ public class AuthServiceImplementation implements AuthService {
         final Date now = new Date();
         Date expiryDate = new Date(now.getTime() + validity);
 
-        RefreshStorage refreshTokenData = new RefreshStorage(email, token, expiryDate);
-        refreshStorageRepository.save(refreshTokenData);
+        RefreshStorage existingToken = refreshStorageRepository.findByEmail(email);
+
+        if (existingToken != null) {
+            existingToken.setToken(token);
+            existingToken.setExpiryDate(expiryDate);
+            refreshStorageRepository.save(existingToken);
+        } else {
+            RefreshStorage refreshTokenData = new RefreshStorage(email, token, expiryDate);
+            refreshStorageRepository.save(refreshTokenData);
+        }
     }
+
 }
